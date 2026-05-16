@@ -1,9 +1,11 @@
 import { OllamaMotor } from "./adapters/out/OllamaMotor";
+import { ArquivoMemoriaAdapter } from "./adapters/out/ArquivoMemoriaAdapter";
 import { AminusAgent } from "./core/usecases/AminusAgent";
 import * as readline from "readline";
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
 const OLLAMA_MODELO = process.env.OLLAMA_MODELO ?? "qwen2.5-coder:1.5b";
+const SESSAO_ID = process.env.SESSAO_ID ?? "default";
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -18,9 +20,11 @@ function perguntar(pergunta: string): Promise<string> {
 
 async function main() {
     const motor = new OllamaMotor(OLLAMA_BASE_URL, OLLAMA_MODELO);
-    const agente = new AminusAgent(motor);
+    const memoria = new ArquivoMemoriaAdapter();
+    const agente = new AminusAgent(motor, memoria);
 
-    console.log(`🧠 Aminus v0.1.0 | Motor: ${OLLAMA_MODELO} | ${OLLAMA_BASE_URL}`);
+    console.log(`🧠 Aminus v0.2.0 | Motor: ${OLLAMA_MODELO} | ${OLLAMA_BASE_URL}`);
+    console.log(`📁 Sessão: ${SESSAO_ID}`);
     console.log('Digite "/sair" para encerrar.\n');
 
     let ativo = true;
@@ -33,7 +37,7 @@ async function main() {
         }
 
         try {
-            const resposta = await agente.interagir(entrada);
+            const resposta = await agente.interagir(SESSAO_ID, entrada);
             console.log(`Aminus > ${resposta}\n`);
         } catch (error) {
             console.error(`Erro inesperado: ${(error as Error).message}\n`);
