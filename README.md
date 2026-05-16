@@ -1,4 +1,4 @@
-# Aminus Agent v0.2.0 🧠
+# Aminus Agent v0.4.0 🧠
 
 **Aminus** é um agente de IA autônomo projetado para ser leve, modular e extensível. Ele se conecta a modelos de linguagem locais (via [Ollama](https://ollama.com)) e oferece uma interface CLI interativa para conversação técnica com **persistência de histórico de mensagens**.
 
@@ -84,13 +84,15 @@ npm test
 Os testes cobrem o núcleo do agente (`AminusAgent`) com mocks manuais, garantindo que nenhuma chamada de rede ou acesso a disco real seja feito durante a execução dos testes.
 
 ```
-✓ src/core/usecases/AminusAgent.spec.ts (5 tests)
-  ✓ AminusAgent
+✓ src/core/usecases/AminusAgent.spec.ts (7 tests)
+  ✓ AminusAgent (7)
     ✓ deve retornar a resposta do motor cognitivo no caminho feliz
     ✓ deve retornar mensagem de fallback quando o motor lançar um erro
     ✓ deve carregar o histórico e incluí-lo no prompt enviado ao motor
     ✓ deve salvar a nova interação no histórico após resposta do motor
     ✓ deve iniciar com histórico vazio quando não há mensagens anteriores
+    ✓ deve registrar erro ao falhar na persistência do histórico
+    ✓ deve enviar apenas as últimas 6 mensagens ao motor quando o histórico tem 20 mensagens
 ```
 
 ## 📁 Estrutura do Projeto
@@ -126,4 +128,4 @@ Distribuído sob a licença **MIT**. Consulte o arquivo `LICENSE` para mais info
 
 ---
 
-<p align="center">Desenvolvido por <strong>Nexus Team</strong> — Sprint 0.2.0 ✅</p>
+<p align="center">Desenvolvido por <strong>Nexus Team</strong> — Sprint 0.4.0 ✅</p>

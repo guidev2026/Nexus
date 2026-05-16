@@ -5,7 +5,7 @@ import { AminusAgent } from "./core/usecases/AminusAgent";
 import * as readline from "readline";
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
-const OLLAMA_MODELO = process.env.OLLAMA_MODELO ?? "qwen2.5-coder:1.5b";
+const OLLAMA_MODELO = process.env.OLLAMA_MODELO ?? "qwen2.5-coder:3b";
 const SESSAO_ID = process.env.SESSAO_ID ?? "default";
 
 const rl = readline.createInterface({
@@ -25,7 +25,7 @@ async function main() {
     const memoria = new ArquivoMemoriaAdapter();
     const agente = new AminusAgent(motor, memoria, logger);
 
-    logger.info(`Aminus v0.2.0 | Motor: ${OLLAMA_MODELO} | ${OLLAMA_BASE_URL}`);
+    logger.info(`Aminus v0.3.0 | Motor: ${OLLAMA_MODELO} | ${OLLAMA_BASE_URL}`);
     logger.info(`Sessão: ${SESSAO_ID}`);
     console.log('Digite "/sair" para encerrar.\n');
 

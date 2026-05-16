@@ -129,8 +129,9 @@ describe("AminusAgent", () => {
             .calls[0][0] as string;
         expect(promptChamado).toContain("Primeira mensagem");
 
+        // 2 ocorrências nos few-shot examples + 1 da mensagem atual = 3
         const ocorrenciasUsuario = promptChamado.match(/Usuário:/g)?.length ?? 0;
-        expect(ocorrenciasUsuario).toBe(1);
+        expect(ocorrenciasUsuario).toBe(3);
         expect(promptChamado).toContain("Usuário: Primeira mensagem");
         expect(loggerMock.info).toHaveBeenCalledWith(
             "Sessão 'sessao-1' carregada com 0 mensagens"
@@ -154,5 +155,56 @@ describe("AminusAgent", () => {
             "Erro ao persistir histórico da sessão 'sessao-1'",
             expect.any(Error),
         );
+    });
+
+    it("deve enviar apenas as últimas 6 mensagens ao motor quando o histórico tem 20 mensagens", async () => {
+        // Arrange: cria um histórico com 20 mensagens (10 pares user/assistant)
+        const historicoGrande: Mensagem[] = [];
+        for (let i = 1; i <= 10; i++) {
+            historicoGrande.push({ role: "user", content: `Mensagem usuário ${i}` });
+            historicoGrande.push({ role: "assistant", content: `Resposta Aminus ${i}` });
+        }
+
+        const motorMock = criarMotorMock("Última resposta");
+        const memoriaMock = criarMemoriaMock(historicoGrande);
+        const loggerMock = criarLoggerMock();
+        const agente = new AminusAgent(motorMock, memoriaMock, loggerMock);
+
+        // Act
+        await agente.interagir("sessao-1", "Mensagem atual");
+
+        // Assert
+        const promptChamado = (motorMock.processar as ReturnType<typeof vi.fn>).mock
+            .calls[0][0] as string;
+
+        // Últimas 6 de 20 mensagens = pares 8, 9, 10
+        expect(promptChamado).toContain("Mensagem usuário 8");
+        expect(promptChamado).toContain("Resposta Aminus 8");
+        expect(promptChamado).toContain("Mensagem usuário 9");
+        expect(promptChamado).toContain("Resposta Aminus 9");
+        expect(promptChamado).toContain("Mensagem usuário 10");
+        expect(promptChamado).toContain("Resposta Aminus 10");
+
+        // Não deve conter as mensagens descartadas pela janela (1 a 7)
+        // Usa regex com word boundary para evitar falsos positivos
+        // (ex: "Mensagem usuário 1" é substrings de "Mensagem usuário 10")
+        expect(promptChamado).not.toMatch(/\bMensagem usuário [1-7]\b/);
+        expect(promptChamado).not.toMatch(/\bResposta Aminus [1-7]\b/);
+
+        // Deve conter a mensagem atual do usuário
+        expect(promptChamado).toContain("Mensagem atual");
+
+        // Deve conter as instruções de identidade e os few-shot examples
+        expect(promptChamado).toContain("Você é o Aminus");
+        expect(promptChamado).toContain("Lembre-se: Você é o Aminus");
+        expect(promptChamado).toContain("Quanto é 10x5?");
+        expect(promptChamado).toContain("Qual a capital da França?");
+
+        // A persistência ainda salva o histórico completo
+        expect(memoriaMock.salvarHistorico).toHaveBeenCalledTimes(1);
+        const [, historicoSalvo] = (
+            memoriaMock.salvarHistorico as ReturnType<typeof vi.fn>
+        ).mock.calls[0] as [string, Mensagem[]];
+        expect(historicoSalvo.length).toBe(22); // 20 originais + user + assistant = 22
     });
 });

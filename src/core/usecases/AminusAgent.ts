@@ -3,6 +3,18 @@ import { IMemoriaRepository } from "../ports/out/IMemoriaRepository";
 import { ILogger } from "../ports/out/ILogger";
 import { Mensagem } from "../models/Mensagem";
 
+const INSTRUCAO_SISTEMA =
+    "Você é o Aminus, um assistente técnico, objetivo e altamente capacitado. Responda de forma direta.";
+
+const INSTRUCAO_REFORCO = "Lembre-se: Você é o Aminus. Seja seco e direto.";
+
+const FEW_SHOT_EXAMPLES = [
+    "Usuário: Quanto é 10x5?\nAminus: 50.",
+    "Usuário: Qual a capital da França?\nAminus: Paris.",
+];
+
+const JANELA_HISTORICO = 6;
+
 export class AminusAgent {
     constructor(
         private readonly motor: IMotorCognitivo,
@@ -29,15 +41,18 @@ export class AminusAgent {
     }
 
     private montarPromptComHistorico(historico: Mensagem[], mensagem: string): string {
-        const linhas: string[] = [
-            "Você é o Aminus, um assistente técnico, objetivo e altamente capacitado. Responda de forma direta.",
-        ];
+        const linhas: string[] = [INSTRUCAO_SISTEMA, ...FEW_SHOT_EXAMPLES, ""];
 
-        for (const m of historico) {
+        // Janela deslizante: pega apenas as últimas N mensagens
+        const recorte = historico.slice(-JANELA_HISTORICO);
+
+        for (const m of recorte) {
             const rotulo = m.role === "user" ? "Usuário" : "Aminus";
             linhas.push(`${rotulo}: ${m.content}`);
         }
 
+        linhas.push("");
+        linhas.push(INSTRUCAO_REFORCO);
         linhas.push(`Usuário: ${mensagem}`);
         linhas.push("Aminus:");
         return linhas.join("\n");
