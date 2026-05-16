@@ -1,0 +1,21 @@
+{
+  "name": "aminus",
+  "version": "0.1.0",
+  "description": "Agente de IA autônomo focado em Clean Architecture, Injeção de Dependência Manual e Zero Dependências de Produção.",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "tsc && node dist/main.js",
+    "test": "vitest run"
+  },
+  "keywords": ["ai", "agent", "clean-architecture", "ollama", "typescript", "hexagonal"],
+  "author": "Nexus Team",
+  "license": "MIT",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^25.8.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  }
+}

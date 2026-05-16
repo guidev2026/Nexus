@@ -1,0 +1,30 @@
+# 📘 Padrões de Arquitetura e Desenvolvimento - Projeto Aminus
+
+Este documento define as regras fundamentais de engenharia de software para o desenvolvimento do agente **Aminus**. Qualquer nova funcionalidade ou refatoração deve obedecer estritamente a estas diretrizes.
+
+## 🏛️ 1. Arquitetura (Hexagonal / Clean Architecture)
+* **Isolamento do Núcleo (Core):** A pasta `src/core/` contém o domínio e os casos de uso. O Core **não deve conhecer** detalhes de infraestrutura (banco de dados, internet, CLI, etc.).
+* **Portas e Adaptadores:** * O Core define **Interfaces** (Portas) dizendo *o que* precisa ser feito.
+  * A pasta `src/adapters/` (Adaptadores) contém a implementação dessas interfaces.
+* **Injeção de Dependência:** Toda dependência deve ser injetada via construtor de forma **manual** na raiz da aplicação (`main.ts`). Nenhuma biblioteca de injeção de dependência externa deve ser usada.
+
+## 🧪 2. Estratégia de Testes (Qualidade Absoluta)
+* **Testes Unitários Isolados:** O Core deve ter 100% de cobertura de testes unitários. Como o Core depende apenas de interfaces, usaremos Mocks manuais nos testes.
+* **Ferramenta:** Usaremos o `Vitest` como ferramenta de execução de testes (instalado estritamente como `devDependency`).
+* **Regra de Ouro do Teste:** Um teste unitário do Core nunca deve fazer chamadas reais de rede (HTTP) ou ler/escrever no disco real.
+
+## 🧱 3. Princípios SOLID e Boas Práticas de Código
+* **S (Responsabilidade Única):** Cada classe/arquivo faz apenas uma coisa.
+* **O (Aberto/Fechado):** O Core é aberto para extensão (novos adaptadores), mas fechado para modificação.
+* **D (Inversão de Dependência):** O Core depende de abstrações (Interfaces), a Infraestrutura depende do Core.
+* **0 Dependências em Produção:** O bloco `dependencies` do `package.json` deve permanecer vazio. Todas as ferramentas (TypeScript, Vitest, @types/node) entram em `devDependencies`.
+* **Tratamento de Erros:** Evitar o uso de `throw` para erros de negócio previsíveis. Adotar o retorno estruturado de Falha/Sucesso (Result Pattern).
+* **Configuração Segura:** Variáveis de ambiente (`process.env`) devem ser validadas e encapsuladas em um objeto de configuração tipado no momento da inicialização.
+
+## 🔄 4. Ciclo de Desenvolvimento (Sprints)
+* **WIP Limit (Work in Progress):** Uma Sprint deve conter de **1 a 5 Tasks (tarefas)** no máximo.
+* Se uma funcionalidade exigir mais de 5 tarefas, ela deve ser obrigatoriamente dividida em múltiplas Sprints.
+* Ao iniciar uma nova Sprint, o **Prompt Template de Início de Sprint** deve ser utilizado para garantir o alinhamento de escopo.
+
+---
+*Versão do Documento: 1.1.0 | Refere-se à versão: Aminus v0.1.x*

@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    /* Módulos e Compilação */
+    "target": "ES2022", /* Usa recursos modernos do JS */
+    "module": "CommonJS", /* Padrão do Node.js */
+    "rootDir": "./src", /* Onde está nosso código TS */
+    "outDir": "./dist", /* Onde o JS compilado vai parar */
+    "esModuleInterop": true, /* Facilita importações */
+    "forceConsistentCasingInFileNames": true, /* Evita bugs de maiúscula/minúscula entre Windows e Linux */
+    /* Rigor e Qualidade de Código (O Padrão Ouro) */
+    "strict": true, /* Ativa TODAS as verificações rigorosas de tipo */
+    "noImplicitAny": true, /* Proíbe o uso do tipo 'any' sem declarar explícitamente */
+    "strictNullChecks": true, /* Impede que algo seja 'null' ou 'undefined' sem você prever */
+    "strictPropertyInitialization": true, /* Garante que classes inicializem todas as suas propriedades */
+    "noUnusedLocals": true, /* Alerta se você criar uma variável e não usar */
+    "noUnusedParameters": true, /* Alerta se você criar um parâmetro e não usar */
+    "noImplicitReturns": true, /* Garante que todas as rotas de uma função retornem algo */
+    "skipLibCheck": true, /* Deixa a compilação mais rápida */
+    "types": ["node"] /* Garante que os tipos do Node.js sejam reconhecidos */
+  },
+  "include": [
+    "src/**/*"
+  ], /* Compila tudo dentro de src/ */
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ] /* Ignora testes na compilação final */
+}
