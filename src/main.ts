@@ -3,7 +3,7 @@ import { AminusAgent } from "./core/usecases/AminusAgent";
 import * as readline from "readline";
 
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
-const OLLAMA_MODELO = process.env.OLLAMA_MODELO ?? "qwen2.5-coder:1..5b";
+const OLLAMA_MODELO = process.env.OLLAMA_MODELO ?? "qwen2.5-coder:1.5b";
 
 const rl = readline.createInterface({
     input: process.stdin,
