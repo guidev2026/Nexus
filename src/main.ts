@@ -1,5 +1,6 @@
 import { OllamaMotor } from "./adapters/out/OllamaMotor";
 import { ArquivoMemoriaAdapter } from "./adapters/out/ArquivoMemoriaAdapter";
+import { ConsoleLoggerAdapter } from "./adapters/out/ConsoleLoggerAdapter";
 import { AminusAgent } from "./core/usecases/AminusAgent";
 import * as readline from "readline";
 
@@ -19,12 +20,13 @@ function perguntar(pergunta: string): Promise<string> {
 }
 
 async function main() {
-    const motor = new OllamaMotor(OLLAMA_BASE_URL, OLLAMA_MODELO);
+    const logger = new ConsoleLoggerAdapter();
+    const motor = new OllamaMotor(OLLAMA_BASE_URL, OLLAMA_MODELO, logger);
     const memoria = new ArquivoMemoriaAdapter();
-    const agente = new AminusAgent(motor, memoria);
+    const agente = new AminusAgent(motor, memoria, logger);
 
-    console.log(`🧠 Aminus v0.2.0 | Motor: ${OLLAMA_MODELO} | ${OLLAMA_BASE_URL}`);
-    console.log(`📁 Sessão: ${SESSAO_ID}`);
+    logger.info(`Aminus v0.2.0 | Motor: ${OLLAMA_MODELO} | ${OLLAMA_BASE_URL}`);
+    logger.info(`Sessão: ${SESSAO_ID}`);
     console.log('Digite "/sair" para encerrar.\n');
 
     let ativo = true;
@@ -40,15 +42,16 @@ async function main() {
             const resposta = await agente.interagir(SESSAO_ID, entrada);
             console.log(`Aminus > ${resposta}\n`);
         } catch (error) {
-            console.error(`Erro inesperado: ${(error as Error).message}\n`);
+            logger.error("Erro inesperado no loop principal", error as Error);
         }
     }
 
-    console.log("Encerrando Aminus. Até mais!");
+    logger.info("Encerrando Aminus. Até mais!");
     rl.close();
 }
 
 main().catch((error) => {
-    console.error("Falha na inicialização:", error);
+    const logger = new ConsoleLoggerAdapter();
+    logger.error("Falha na inicialização", error instanceof Error ? error : new Error(String(error)));
     process.exit(1);
 });

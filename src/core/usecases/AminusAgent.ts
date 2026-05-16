@@ -1,23 +1,29 @@
 import { IMotorCognitivo } from "../ports/out/IMotorCognitivo";
 import { IMemoriaRepository } from "../ports/out/IMemoriaRepository";
+import { ILogger } from "../ports/out/ILogger";
 import { Mensagem } from "../models/Mensagem";
 
 export class AminusAgent {
     constructor(
         private readonly motor: IMotorCognitivo,
         private readonly memoria: IMemoriaRepository,
+        private readonly logger: ILogger,
     ) {}
 
     public async interagir(idSessao: string, mensagem: string): Promise<string> {
         const historico = await this.memoria.carregarHistorico(idSessao);
+        this.logger.info(`Sessão '${idSessao}' carregada com ${historico.length} mensagens`);
+
         const promptFormatado = this.montarPromptComHistorico(historico, mensagem);
 
         try {
+            this.logger.info("Iniciando chamada ao motor cognitivo...");
             const resposta = await this.motor.processar(promptFormatado);
             await this.persistirInteracao(idSessao, historico, mensagem, resposta);
             return resposta;
         } catch (error) {
-            console.error("[Aminus]Falha na comunicação com o núcleo cognitivo:", error);
+            const erro = error instanceof Error ? error : new Error(String(error));
+            this.logger.error("Falha na comunicação com o núcleo cognitivo", erro);
             return "Erro interno do servidor. Tente novamente mais tarde.";
         }
     }
@@ -43,11 +49,17 @@ export class AminusAgent {
         mensagemUsuario: string,
         resposta: string,
     ): Promise<void> {
-        const novoHistorico: Mensagem[] = [
-            ...historico,
-            { role: "user", content: mensagemUsuario },
-            { role: "assistant", content: resposta },
-        ];
-        await this.memoria.salvarHistorico(idSessao, novoHistorico);
+        try {
+            const novoHistorico: Mensagem[] = [
+                ...historico,
+                { role: "user", content: mensagemUsuario },
+                { role: "assistant", content: resposta },
+            ];
+            await this.memoria.salvarHistorico(idSessao, novoHistorico);
+            this.logger.info(`Histórico salvo para sessão '${idSessao}'`);
+        } catch (error) {
+            const erro = error instanceof Error ? error : new Error(String(error));
+            this.logger.error(`Erro ao persistir histórico da sessão '${idSessao}'`, erro);
+        }
     }
 }

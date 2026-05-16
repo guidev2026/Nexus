@@ -1,4 +1,5 @@
 import { IMotorCognitivo } from "../../core/ports/out/IMotorCognitivo";
+import { ILogger } from "../../core/ports/out/ILogger";
 
 interface OllamaGenerateResponse {
     model: string;
@@ -10,7 +11,8 @@ interface OllamaGenerateResponse {
 export class OllamaMotor implements IMotorCognitivo {
     constructor(
         private readonly baseUrl: string,
-        private readonly modelo: string
+        private readonly modelo: string,
+        private readonly logger: ILogger,
     ) {}
 
     async processar(prompt: string): Promise<string> {
@@ -30,15 +32,25 @@ export class OllamaMotor implements IMotorCognitivo {
                 body,
             });
         } catch (error) {
+            const erro = error instanceof Error ? error : new Error(String(error));
+            this.logger.error(
+                `Falha de conexão com Ollama em ${this.baseUrl}. Verifique se o serviço está em execução.`,
+                erro,
+            );
             throw new Error(
                 `Não foi possível conectar ao servidor Ollama em ${this.baseUrl}. ` +
-                    `Verifique se o serviço está em execução. Detalhes: ${(error as Error).message}`
+                    `Verifique se o serviço está em execução. Detalhes: ${erro.message}`
             );
         }
 
         if (!response.ok) {
+            const statusText = await response.text().catch(() => response.statusText);
+            this.logger.error(
+                `Ollama retornou HTTP ${response.status} para ${url}`,
+                new Error(statusText),
+            );
             throw new Error(
-                `Ollama retornou status ${response.status}: ${response.statusText}`
+                `Ollama retornou status ${response.status}: ${statusText}`
             );
         }
 
